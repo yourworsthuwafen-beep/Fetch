@@ -9,6 +9,10 @@ def __main__():
             cpuinfo = f.read()
         with open("/proc/meminfo", "r") as f:
             meminfo = f.read()
+        with open('/proc/uptime', "r") as f:
+            uptime = f.read()
+        with open('/proc/consoles', "r") as f:
+            session = f.read() 
         print("\033[34mUser:\033[33m", os.getlogin())
         print("\033[34mHost:\033[33m", os.uname().nodename)
         print("\033[34mOS:\033[33m", platform_)
@@ -27,7 +31,7 @@ def __main__():
             if 'MemTotal' in line:
                 ramkb = int(line.split()[1].strip())
                 ramgb = (ramkb / 1048576)
-                print(f"\033[34mRAM:\033[33m{ramgb:.2f} GB")
+                print(f"\033[34mRAM Totals:\033[33m{ramgb:.2f} GB")
                 break
         for line in meminfo.split("\n"):
             if 'MemFree' in line:
@@ -35,6 +39,14 @@ def __main__():
                 ramgb = (ramkb / 1048576)
                 print(f"\033[34mRAM Free:\033[33m{ramgb:.2f} GB")
                 break
+        for line in session.split('\n'):
+            if session.startswith('tty0'):
+                if session.count('\n') < 0:
+                    ses1, ses2 = session.splitlines() 
+                    print("Session 1:", ses1.strip())
+                    print('Session 2:', ses2.strip())
+                break
+        print("\033[34mUptime(Hours):\033[33m", int(float(uptime.split()[0]) // 3600), "Hrs")
         network_name = print("\033[34mNetwork Host:\033[33m", platform.node())
         linuxlogo = (
     f"\033[36m                .88888888:.\033[0m\n"
@@ -70,7 +82,7 @@ def __main__():
         winver = print(f"\033[34mVersion:\033[0m {platform.version()}")
         windowslogo = f"""
 \x1b[34m
-   ⣤⣴⣾⣿⣿⣿⣿⣿⣶⡄                 \033[34mOS:\033[0mWindows\033[34m
+   ⣤⣴⣾⣿⣿⣿⣿⣿⣶                  \033[34mOS:\033[0mWindows\033[34m
   ⢀⣿⣿⣿⣿⣿⣿⣿⣿⣿  ⢰⣦⣄⣀⣀⣠⣴⣾⣿⠃      \033[34mVersion:\033[0m{platform.release()}\033[34m
   ⢸⣿⣿⣿⣿⣿⣿⣿⣿⡏  ⣼⣿⣿⣿⣿⣿⣿⣿⣿       \033[34mArchitecture:\033[0m{platform.architecture()}\033[34m
   ⣼⣿⡿⠿⠛⠻⠿⣿⣿⡇  ⣿⣿⣿⣿⣿⣿⣿⣿⡿       \033[34mNetwork Host:\033[0m{platform.node()}\033[34m
@@ -80,8 +92,8 @@ def __main__():
  ⣾⣿⣿⣿⣿⣿⣿⣿⣿⡇  ⣿⣿⣿⣿⣿⣿⣿⣿⡟
 ⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⠁ ⢸⣿⣿⣿⣿⣿⣿⣿⣿⡇
 ⢠⣿⡿⠿⠛⠉⠉⠉⠛⠿  ⢸⣿⣿⣿⣿⣿⣿⣿⣿⠁
-⠘           ⠻⢿⣿⣿⣿⣿⣿⠿⠛
+           ⠻⢿⣿⣿⣿⣿⣿⠿⠛
 \x1b[0m
-"""
+""".strip('()').strip("''") 
         print(windowslogo)
 __main__()
