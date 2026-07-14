@@ -1,15 +1,42 @@
 import platform
-import distro
+import os
 platform_ = platform.system()
 platform_ver = platform.release()
-if platform_ == 'Linux':
-    print("OS:", platform_)
-    print("OS Version:", platform_ver)
-    distro_ = print("Distro:", distro.id())
-    disver = print("Distro Version:", distro.version())
-    disname = print("Name and Release Type:", distro.name())
-    architech = print("Architecture:", platform.machine())
-    linuxlogo = (
+def __main__():
+    if platform_ == 'Linux':
+        import distro
+        with open("/proc/cpuinfo", "r") as f:
+            cpuinfo = f.read()
+        with open("/proc/meminfo", "r") as f:
+            meminfo = f.read()
+        print("\033[34mUser:\033[33m", os.getlogin())
+        print("\033[34mHost:\033[33m", os.uname().nodename)
+        print("\033[34mOS:\033[33m", platform_)
+        distro_ = print("\033[34mDistro:\033[33m", distro.id())
+        print("\033[34mDistro Version:\033[33m", platform_ver)
+        disver = print("\033[34mKernel Version:\033[33m", distro.version())
+        disname = print("\033[34mName and Release Type:\033[33m", distro.name())
+        architech = print("\033[0m\033[34mArchitecture:\033[33m", platform.machine())
+        for line in cpuinfo.split('\n'):
+            if 'model name' in line.lower():
+                cpu = line.split(":")[1].strip()
+                print(f"\033[34mCPU Model:\033[33m{cpu}")
+                break
+        coreslin = print("\033[34mCPU Cores:\033[33m", os.cpu_count())
+        for line in meminfo.split("\n"):
+            if 'MemTotal' in line:
+                ramkb = int(line.split()[1].strip())
+                ramgb = (ramkb / 1048576)
+                print(f"\033[34mRAM:\033[33m{ramgb:.2f} GB")
+                break
+        for line in meminfo.split("\n"):
+            if 'MemFree' in line:
+                ramkb = int(line.split()[1].strip())
+                ramgb = (ramkb / 1048576)
+                print(f"\033[34mRAM Free:\033[33m{ramgb:.2f} GB")
+                break
+        network_name = print("\033[34mNetwork Host:\033[33m", platform.node())
+        linuxlogo = (
     f"\033[36m                .88888888:.\033[0m\n"
     f"\033[36m               88888888.88888.\033[0m\n"
     f"\033[36m             .8888888888888888.\033[0m\n"          
@@ -37,23 +64,24 @@ if platform_ == 'Linux':
      f"`'.:::::::::::88888888888.88:::::::::\n"
       f"     `':::_:\033[33m:' -- '' -'-'\033[36m `':_::::'` \033[0m\n"
     )
-    print(linuxlogo)
-if platform_ == 'Windows':
-    winarch = print("Architecture", platform.machine())
-    winver = print(f"Version: {platform.version()}")
-    windowslogo = """
+        print(linuxlogo)
+    if platform_ == 'Windows':
+        winarch = print("\033[34mArchitecture:\033[0m", platform.machine())
+        winver = print(f"\033[34mVersion:\033[0m {platform.version()}")
+        windowslogo = f"""
 \x1b[34m
-⠀⠀⠀⣤⣴⣾⣿⣿⣿⣿⣿⣶⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⡄      OS:Windows
-⠀⠀⢀⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⢰⣦⣄⣀⣀⣠⣴⣾⣿⠃      Version:idk i dont use windows but its prob 10 or 11
-⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⡏⠀⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⠀
-⠀⠀⣼⣿⡿⠿⠛⠻⠿⣿⣿⡇⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⡿⠀
-⠀⠀⠉⠀⠀⠀⢀⠀⠀⠀⠈⠁⠀⢰⣿⣿⣿⣿⣿⣿⣿⣿⠇⠀
-⠀⠀⣠⣴⣶⣿⣿⣿⣷⣶⣤⠀⠀⠀⠈⠉⠛⠛⠛⠉⠉⠀⠀⠀
-⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⣶⣦⣄⣀⣀⣀⣤⣤⣶⠀⠀
-⠀⣾⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⢀⣿⣿⣿⣿⣿⣿⣿⣿⡟⠀⠀
-⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⠁⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀
-⢠⣿⡿⠿⠛⠉⠉⠉⠛⠿⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⠁⠀⠀
-⠘⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠻⢿⣿⣿⣿⣿⣿⠿⠛⠀⠀⠀
+   ⣤⣴⣾⣿⣿⣿⣿⣿⣶⡄                 \033[34mOS:\033[0mWindows\033[34m
+  ⢀⣿⣿⣿⣿⣿⣿⣿⣿⣿  ⢰⣦⣄⣀⣀⣠⣴⣾⣿⠃      \033[34mVersion:\033[0m{platform.release()}\033[34m
+  ⢸⣿⣿⣿⣿⣿⣿⣿⣿⡏  ⣼⣿⣿⣿⣿⣿⣿⣿⣿       \033[34mArchitecture:\033[0m{platform.architecture()}\033[34m
+  ⣼⣿⡿⠿⠛⠻⠿⣿⣿⡇  ⣿⣿⣿⣿⣿⣿⣿⣿⡿       \033[34mNetwork Host:\033[0m{platform.node()}\033[34m
+  ⠉   ⢀      ⢰⣿⣿⣿⣿⣿⣿⣿⣿⠇       \033[34mCPU:\033[0m{platform.processor()}\033[34m
+  ⣠⣴⣶⣿⣿⣿⣷⣶⣤                   \033[34mCPU Cores:\033[0m{os.cpu_count()}\033[34m
+ ⢸⣿⣿⣿⣿⣿⣿⣿⣿⡇  ⣶⣦⣄⣀⣀⣀⣤⣤⣶ 
+ ⣾⣿⣿⣿⣿⣿⣿⣿⣿⡇  ⣿⣿⣿⣿⣿⣿⣿⣿⡟
+⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⠁ ⢸⣿⣿⣿⣿⣿⣿⣿⣿⡇
+⢠⣿⡿⠿⠛⠉⠉⠉⠛⠿  ⢸⣿⣿⣿⣿⣿⣿⣿⣿⠁
+⠘           ⠻⢿⣿⣿⣿⣿⣿⠿⠛
 \x1b[0m
 """
-    print(windowslogo)
+        print(windowslogo)
+__main__()
