@@ -1,10 +1,14 @@
+#!/usr/bin/env python3
 import platform
 import os
 platform_ = platform.system()
 platform_ver = platform.release()
 def __main__():
     if platform_ == 'Linux':
-        import distro
+        try:
+            import distro
+        except ModuleNotFoundError as e:
+            print('Please Install Distro via "pip install distro"')
         with open("/proc/cpuinfo", "r") as f:
             cpuinfo = f.read()
         with open("/proc/meminfo", "r") as f:
@@ -17,8 +21,8 @@ def __main__():
         print("\033[34mHost:\033[33m", os.uname().nodename)
         print("\033[34mOS:\033[33m", platform_)
         distro_ = print("\033[34mDistro:\033[33m", distro.id())
-        print("\033[34mDistro Version:\033[33m", platform_ver)
-        disver = print("\033[34mKernel Version:\033[33m", distro.version())
+        print("\033[34mKernel Version:\033[33m", platform_ver)
+        disver = print("\033[34mDistro Version:\033[33m", distro.version())
         disname = print("\033[34mName and Release Type:\033[33m", distro.name())
         architech = print("\033[0m\033[34mArchitecture:\033[33m", platform.machine())
         for line in cpuinfo.split('\n'):
@@ -31,21 +35,26 @@ def __main__():
             if 'MemTotal' in line:
                 ramkb = int(line.split()[1].strip())
                 ramgb = (ramkb / 1048576)
-                print(f"\033[34mRAM Totals:\033[33m{ramgb:.2f} GB")
+                print(f"\033[34mRAM Total:\033[33m{ramgb:.2f} GB")
                 break
         for line in meminfo.split("\n"):
-            if 'MemFree' in line:
-                ramkb = int(line.split()[1].strip())
-                ramgb = (ramkb / 1048576)
-                print(f"\033[34mRAM Free:\033[33m{ramgb:.2f} GB")
+            if 'MemAvailable' in line:
+                frramkb = int(line.split()[1].strip())
+                frramgb = (frramkb / 1048576)
+                ramper = (frramkb / ramkb * 100)
+                if ramper >= 70.00:
+                    print(f"\033[34mRAM Free:\033[92m{ramper:.2f}%\033[33m of RAM Free")
+                elif ramper >= 50.00:
+                    print(f"\033[34mRAM Free:\033[93m {ramper:.2f}%\033[33m of RAM Free")
+                else:
+                    print(f"\033[34mRAM Free:\033[91m {ramper:.2f}%\033[33m of RAM Free")
                 break
         for line in session.split('\n'):
-            if session.startswith('tty0'):
-                if session.count('\n') < 0:
-                    ses1, ses2 = session.splitlines() 
-                    print("Session 1:", ses1.strip())
-                    print('Session 2:', ses2.strip())
+            session = session.strip(' ').splitlines()
+            for index, line in enumerate(session):
+                print(f"\033[34mSessions:\033[33m {index + 1}:", line.strip())
                 break
+            break
         print("\033[34mUptime(Hours):\033[33m", int(float(uptime.split()[0]) // 3600), "Hrs")
         network_name = print("\033[34mNetwork Host:\033[33m", platform.node())
         linuxlogo = (
@@ -78,9 +87,9 @@ def __main__():
     )
         print(linuxlogo)
     if platform_ == 'Windows':
-        winarch = print("\033[34mArchitecture:\033[0m", platform.machine())
-        winver = print(f"\033[34mVersion:\033[0m {platform.version()}")
-        windowslogo = f"""
+            winarch = print("\033[34mArchitecture:\033[0m", platform.machine())
+            winver = print(f"\033[34mVersion:\033[0m {platform.version()}")
+            windowslogo = f"""
 \x1b[34m
    ⣤⣴⣾⣿⣿⣿⣿⣿⣶                  \033[34mOS:\033[0mWindows\033[34m
   ⢀⣿⣿⣿⣿⣿⣿⣿⣿⣿  ⢰⣦⣄⣀⣀⣠⣴⣾⣿⠃      \033[34mVersion:\033[0m{platform.release()}\033[34m
@@ -95,5 +104,5 @@ def __main__():
            ⠻⢿⣿⣿⣿⣿⣿⠿⠛
 \x1b[0m
 """.strip('()').strip("''") 
-        print(windowslogo)
+            print(windowslogo)
 __main__()
