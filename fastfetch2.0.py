@@ -112,7 +112,7 @@ def __main__():
                 else:
                     print(f"\033[34mFree Swap:\033[1;38;2;0;255;0m{swapper:.2f}%\033[1;38;2;250;250;0m Remaining (Healthy)")
                 break
-            print(f"\033[34mDrive Model:\033[1;38;2;250;250;0m{model.strip('\n')}")
+        print(f"\033[34mDrive Model:\033[1;38;2;250;250;0m{model.strip('\n')}")
         for line in session.split('\n'):
             session = session.strip(' ').splitlines()
             for index, line in enumerate(session):
