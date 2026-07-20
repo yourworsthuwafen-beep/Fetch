@@ -10,21 +10,25 @@ platform_ver = platform.release()
 def __main__():
     if platform_ == 'Linux':
         pacname = 'distro'
-        if not os.path.exists('.venv'):
+        home = os.path.expanduser("~")
+        venv_dir = os.path.join(home, ".local", "share", "fetch")
+        if not os.path.exists(venv_dir):
             print('Installing Distro.Making VEnv')
-            subprocess.run([sys.executable, "-m", "venv", ".venv"], check=True) 
-            print('Done Making VEnv.Installing Distro via pip')         
-            subprocess.run([".venv/bin/python", "-m", "ensurepip", "--upgrade"], check=True)
-            subprocess.run([".venv/bin/python", "-m", "pip", "install", "distro"], check=True)
+            os.makedirs(os.path.dirname(venv_dir), exist_ok=True)
+            subprocess.run([sys.executable, "-m", "venv", venv_dir], check=True)
+            print('Done Making VEnv.Installing Distro via pip')
+            subprocess.run([f"{venv_dir}/bin/python", "-m", "ensurepip", "--upgrade"], check=True)
+            subprocess.run([f"{venv_dir}/bin/python", "-m", "pip", "install", "distro"], check=True)
             print('Done installing dependencies!')
         py_ver = f"python{sys.version_info.major}.{sys.version_info.minor}"
-        venv_path = os.path.abspath(f".venv/lib/{py_ver}/site-packages")
+        venv_path = os.path.abspath(f"{venv_dir}/lib/{py_ver}/site-packages")
         sys.path.insert(0, venv_path)
         try:
             import distro
             distroid = distro.id()
-        except (ModuleNotFoundError, ImportError, NameError) as e:
+        except (ModuleNotFoundError, ImportError, NameError, UnboundLocalError) as e:
             print('Please Install Distro via "pip install distro"')
+            sys.exit(1)
         with open("/proc/cpuinfo", "r") as f:
             cpuinfo = f.read()
         with open("/proc/meminfo", "r") as f:
@@ -33,27 +37,24 @@ def __main__():
             uptime = f.read()
         with open('/proc/consoles', "r") as f:
             session = f.read()
-        while True:
-            try:
-                device = 'Unknown'
-                if os.path.exists('/sys/block/'):
-                    for device in os.listdir('/sys/block/'):
-                        if device.startswith(('sd', 'nvme', 'vd', 'hd')):
-                            drivepath = f'/sys/block/{device}/device/model'
-                            with open(drivepath, "r") as f:
-                                model = f.read().strip()
-                            break
-                break
-            except(FileNotFoundError, PermissionError) as e:
-                print('File is Not Found or Permission was denied')
-                break
+        try:
+            device = 'Unknown'
+            if os.path.exists('/sys/block/'):
+                for device in os.listdir('/sys/block/'):
+                    if device.startswith(('sd', 'nvme', 'vd', 'hd')):
+                        drivepath = f'/sys/block/{device}/device/model'
+                        with open(drivepath, "r") as f:
+                            model = f.read().strip()
+                    break
+        except (FileNotFoundError, PermissionError) as e:
+            print('File is Not Found or Permission was denied')
         package_commands = {
     'arch': 'pacman -Q | wc -l',
     'alpine': 'apk info | wc -l',
     'debian': 'dpkg -l | grep ^ii | wc -l',
     'ubuntu': 'dpkg -l | grep ^ii | wc -l',
     'mint': 'dpkg -l | grep ^ii | wc -l',
-    'fedora': 'rpm -qa | wc -l',
+    'fedora': 'rpm -qa | wc -l',3
     'centos': 'rpm -qa | wc -l',
     'rhel': 'rpm -qa | wc -l',
     'rocky': 'rpm -qa | wc -l',
@@ -62,7 +63,7 @@ def __main__():
     'gentoo': 'qlist -I | wc -l',
     'void': 'xbps-query -l | wc -l'
     }
-        print("\033[1;34mUser:\033[1;38;2;250;250;0m", os.getlogin())
+        print("\023[1;34mUser:\033[1;38;2;250;250;0m", os.getlogin())
         print("\033[34mHost:\033[1;38;2;250;250;0m", os.uname().nodename)
         print("\033[34mOS:\033[1;38;2;250;250;0m", platform_)
         distro_ = print("\033[34mDistro:\033[1;38;2;250;250;0m", distro.id())
@@ -89,7 +90,7 @@ def __main__():
                 ramper = (frramkb / ramkb * 100)
                 if ramper >= 70.00:
                     print(f"\033[34mRAM Free:\033[1;38;2;0;255;0m{ramper:.2f}%\033[1;38;2;250;250;0m Remaining (Healthy)")
-                elif ramper >= 50.00:
+                elif ramper >= 40.00:
                     print(f"\033[34mRAM Free:\033[1;38;2;255;255;0m {ramper:.2f}%\033[1;38;2;250;250;0m Remaining (Warning)")
                 else:
                     print(f"\033[34mRAM Free:\033[1;38;2;255;0;0m {ramper:.2f}%\033[1;38;2;250;250;0m Remaining (Low)")
@@ -105,12 +106,12 @@ def __main__():
                 totswapkb = int(line.split()[1].strip())
                 totswapgb = (totswapkb / 1048576)
                 swapper  = (totswapkb / swap * 100)
-                if totswapgb >= 70.00:
-                    print(f"\033[34mFree Swap:\033[1;38;2;255;0;0m{swapper:.2f}%\033[1;38;2;250;250;0m Remaining (Low)")
-                elif totswapgb <= 50.00:
-                    print(f"\033[34mFree Swap:\033[1;38;2;250;250;0m{swapper:.2f}%\033[1;38;2;250;250;0m Remaining (Warning)")
-                else:
+                if swapper >= 70.00:
                     print(f"\033[34mFree Swap:\033[1;38;2;0;255;0m{swapper:.2f}%\033[1;38;2;250;250;0m Remaining (Healthy)")
+                elif swapper >= 40.00:
+                    print(f"\033[34mFree Swap:\033[1;38;2;250;250;0m{swapper:.2f}%\033[1;38;2;250;250;0m Remaining (Warning)")
+                elif swapper <= 40.00:
+                    print(f"\033[34mFree Swap:\033[1;38;2;255;0;0m{swapper:.2f}%\033[1;38;2;250;250;0m Remaining (Low)")
                 break
         print(f"\033[34mDrive Model:\033[1;38;2;250;250;0m{model.strip('\n')}")
         for line in session.split('\n'):
@@ -122,7 +123,10 @@ def __main__():
         getdis = package_commands.get(distroid, "")
         if distroid in package_commands:
             print(f'\033[34mPackages(PM):\033[1;38;2;250;250;0m', subprocess.getoutput(getdis).strip())
-        print("\033[34mUptime(Hours):\033[1;38;2;250;250;0m", int(float(uptime.split()[0]) // 3600), "Hrs")
+        if float(uptime.split()[0]) <= 3600:
+            print("\033[34mUptime(Mins):\033[1;38;2;250;250;0m", int(float(uptime.split()[0]) // 60), "Mins")
+        if float(uptime.split()[0]) >= 3600:
+            print("\033[34mUptime(Hours):\033[1;38;2;250;250;0m", int(float(uptime.split()[0]) // 3600), "Hrs")
         network_name = print("\033[34mNetwork Host:\033[1;38;2;250;250;0m", platform.node())
         linuxlogo = (
     f"\033[1;38;2;23;147;209m                .88888888:.\033[0m\n"
@@ -171,6 +175,7 @@ def __main__():
 ⢠⣿⡿⠿⠛⠉⠉⠉⠛⠿  ⢸⣿⣿⣿⣿⣿⣿⣿⣿⠁
            ⠻⢿⣿⣿⣿⣿⣿⠿⠛
 \x1b[0m
-""".strip('()').strip("''") 
+""".strip('(').strip(')').strip("'") 
             print(windowslogo)
-__main__()
+if __name__ == '__main__':
+    __main__()
