@@ -54,7 +54,7 @@ def __main__():
     'debian': 'dpkg -l | grep ^ii | wc -l',
     'ubuntu': 'dpkg -l | grep ^ii | wc -l',
     'mint': 'dpkg -l | grep ^ii | wc -l',
-    'fedora': 'rpm -qa | wc -l',3
+    'fedora': 'rpm -qa | wc -l',    
     'centos': 'rpm -qa | wc -l',
     'rhel': 'rpm -qa | wc -l',
     'rocky': 'rpm -qa | wc -l',
@@ -63,7 +63,7 @@ def __main__():
     'gentoo': 'qlist -I | wc -l',
     'void': 'xbps-query -l | wc -l'
     }
-        print("\023[1;34mUser:\033[1;38;2;250;250;0m", os.getlogin())
+        print("\033[1;34mUser:\033[1;38;2;250;250;0m", os.getlogin())
         print("\033[34mHost:\033[1;38;2;250;250;0m", os.uname().nodename)
         print("\033[34mOS:\033[1;38;2;250;250;0m", platform_)
         distro_ = print("\033[34mDistro:\033[1;38;2;250;250;0m", distro.id())
